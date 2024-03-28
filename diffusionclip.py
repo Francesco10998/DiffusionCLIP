@@ -74,7 +74,7 @@ class DiffusionCLIP(object):
         else:
             raise ValueError
         """
-        url = "../../../drive/MyDrive/celeba_hq.ckpt"
+        url = "../../drive/MyDrive/celeba_hq.ckpt"
 
         if self.config.data.dataset in ["CelebA_HQ", "LSUN"]:
             model = DDPM(self.config)
@@ -322,7 +322,7 @@ class DiffusionCLIP(object):
         else:
             raise ValueError
         """
-        url = "../../../drive/MyDrive/celeba_hq.ckpt"
+        url = "../../drive/MyDrive/celeba_hq.ckpt"
 
         if self.config.data.dataset in ["CelebA_HQ", "LSUN"]:
             model = DDPM(self.config)

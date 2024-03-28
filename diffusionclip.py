@@ -128,7 +128,7 @@ class DiffusionCLIP(object):
         img_lat_pairs_dic = {}
         for mode in ['train', 'test']:
             img_lat_pairs = []
-            pairs_path = os.path.join('precomputed/',
+            pairs_path = os.path.join('../../drive/MyDrive/',
                                       f'{self.config.data.category}_{mode}_t{self.args.t_0}_nim{self.args.n_precomp_img}_ninv{self.args.n_inv_step}_pairs.pth')
             print(pairs_path)
             if os.path.exists(pairs_path):
@@ -400,7 +400,7 @@ class DiffusionCLIP(object):
                                               f'{self.config.data.category}_{mode}_t{self.args.t_0}_nim{self.args.n_precomp_img}_ninv{self.args.n_inv_step}_pairs.pth')
 
             else:
-                pairs_path = os.path.join('../../../drive/MyDrive/precomputed/',
+                pairs_path = os.path.join('../../drive/MyDrive/',
                                           f'{self.config.data.category}_{mode}_t{self.args.t_0}_nim{self.args.n_precomp_img}_ninv{self.args.n_inv_step}_pairs.pth')
             print(pairs_path)
             if os.path.exists(pairs_path):

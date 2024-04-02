@@ -110,7 +110,8 @@ class DiffusionCLIP(object):
         print("Loading losses")
         clip_loss_func = CLIPLoss(
             self.device,
-            lambda_direction=1,
+            lambda_direction=0,
+            our_lambda_direction=1,
             lambda_patch=0,
             lambda_global=0,
             lambda_manifold=0,
@@ -248,7 +249,8 @@ class DiffusionCLIP(object):
 
                                     progress_bar.update(1)
 
-                            loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
+                            #loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
+                            loss_clip = (2 - clip_loss_func(x0, x)) / 2
                             loss_clip = -torch.log(loss_clip)
                             loss_id = torch.mean(id_loss_func(x0, x))
                             loss_l1 = nn.L1Loss()(x0, x)

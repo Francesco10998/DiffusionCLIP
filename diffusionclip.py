@@ -149,7 +149,8 @@ class DiffusionCLIP(object):
                 return image
 
         transform = transforms.Compose([
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
 
         data_folder = "../../../drive/MyDrive/raw_counterfactual/images"

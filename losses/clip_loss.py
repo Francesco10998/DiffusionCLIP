@@ -28,7 +28,7 @@ class DirectionLoss(torch.nn.Module):
         return self.loss_func(x, y)
 
 class CLIPLoss(torch.nn.Module):
-    def __init__(self, device, lambda_direction=1., lambda_patch=0., lambda_global=0., lambda_manifold=0., lambda_texture=0., patch_loss_type='mae', direction_loss_type='cosine', clip_model='ViT-B/32'):
+    def __init__(self, device, lambda_direction=0., our_lambda_direction=1., lambda_patch=0., lambda_global=0., lambda_manifold=0., lambda_texture=0., patch_loss_type='mae', direction_loss_type='cosine', clip_model='ViT-B/32'):
         super(CLIPLoss, self).__init__()
 
         self.device = device
@@ -50,6 +50,7 @@ class CLIPLoss(torch.nn.Module):
         self.lambda_global    = lambda_global
         self.lambda_patch     = lambda_patch
         self.lambda_direction = lambda_direction
+        self.our_lambda_direction = our_lambda_direction
         self.lambda_manifold  = lambda_manifold
         self.lambda_texture   = lambda_texture
 
@@ -179,6 +180,20 @@ class CLIPLoss(torch.nn.Module):
         edit_direction /= (edit_direction.clone().norm(dim=-1, keepdim=True) + 1e-7)
         return self.direction_loss(edit_direction, self.target_direction).mean()
 
+    def our_clip_directional_loss(self, src_img: torch.Tensor, target_img: torch.Tensor) -> torch.Tensor:
+
+        src_encoding    = self.get_image_features(src_img)
+        target_encoding = self.get_image_features(target_img)
+
+        src_encoding = src_encoding / src_encoding.norm(dim=-1, keepdim=True)
+        target_encoding = target_encoding / target_encoding.norm(dim=-1, keepdim=True)
+
+        #edit_direction = (target_encoding - src_encoding)
+        #edit_direction /= (edit_direction.clone().norm(dim=-1, keepdim=True) + 1e-7)
+        cos = torch.nn.CosineSimilarity(dim=-1, eps=1e-7)
+        cos_res = 1. - cos(src_encoding, target_encoding)
+        return cos_res.mean()
+
     def global_clip_loss(self, img: torch.Tensor, text) -> torch.Tensor:
         if not isinstance(text, list):
             text = [text]
@@ -278,7 +293,7 @@ class CLIPLoss(torch.nn.Module):
 
         return self.texture_loss(src_features, target_features)
 
-    def forward(self, src_img: torch.Tensor, source_class: str, target_img: torch.Tensor, target_class: str, texture_image: torch.Tensor = None):
+    def forward(self, src_img: torch.Tensor, target_img: torch.Tensor, texture_image: torch.Tensor = None):
         clip_loss = 0.0
 
         if self.lambda_global:
@@ -289,6 +304,9 @@ class CLIPLoss(torch.nn.Module):
 
         if self.lambda_direction:
             clip_loss += self.lambda_direction * self.clip_directional_loss(src_img, source_class, target_img, target_class)
+
+        if self.our_lambda_direction:
+            clip_loss += self.our_lambda_direction * self.our_clip_directional_loss(src_img, target_img)
 
         if self.lambda_manifold:
             clip_loss += self.lambda_manifold * self.clip_angle_loss(src_img, source_class, target_img, target_class)

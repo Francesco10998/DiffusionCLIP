@@ -119,6 +119,51 @@ class DiffusionCLIP(object):
             clip_model=self.args.clip_model_name)
         id_loss_func = id_loss.IDLoss().to(self.device).eval()
 
+        ###### GET COUNTERFACTUAL DATASET #############################à
+        from torch.utils.data import DataLoader, Dataset
+        from torchvision import transforms
+        from PIL import Image
+        
+        print("Computing counterfactual")
+
+        counterfactual_array = []
+
+        class CustomImageDataset(Dataset):
+            def __init__(self, data_folder, transform=None):
+                self.data_folder = data_folder
+                self.transform = transform
+
+                self.data_files = os.listdir(data_folder)
+
+            def __len__(self):
+                return len(self.data_files)
+
+            def __getitem__(self, idx):
+                file_path = os.path.join(self.data_folder, self.data_files[idx])
+
+                image = Image.open(file_path)
+
+                if self.transform:
+                    image = self.transform(image)
+
+                return image
+
+        transform = transforms.Compose([
+            transforms.ToTensor()
+        ])
+
+        data_folder = "../../../drive/MyDrive/raw_counterfactual/images"
+
+        dataset = CustomImageDataset(data_folder, transform=transform)
+
+        batch_size = 1
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+        for images in dataloader:
+            counterfactual_array.append(images)
+
+        ############################################################
+
         # ----------- Precompute Latents -----------#
         print("Prepare identity latent")
         seq_inv = np.linspace(0, 1, self.args.n_inv_step) * self.args.t_0
@@ -250,7 +295,8 @@ class DiffusionCLIP(object):
                                     progress_bar.update(1)
 
                             #loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
-                            loss_clip = (2 - clip_loss_func(x0, x)) / 2
+                            #loss_clip = (2 - clip_loss_func(x0, x)) / 2
+                            loss_clip = (2 - clip_loss_func(counterfactual_array[step], x)) / 2
                             loss_clip = -torch.log(loss_clip)
                             loss_id = torch.mean(id_loss_func(x0, x))
                             loss_l1 = nn.L1Loss()(x0, x)

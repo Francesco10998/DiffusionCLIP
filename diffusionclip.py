@@ -153,7 +153,7 @@ class DiffusionCLIP(object):
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
 
-        data_folder = "../../../drive/MyDrive/raw_counterfactual/images"
+        data_folder = "../../../drive/MyDrive/CLIPDiffusion/Mustache/raw_counterfactual/images"
 
         dataset = CustomImageDataset(data_folder, transform=transform)
 

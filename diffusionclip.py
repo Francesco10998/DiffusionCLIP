@@ -153,7 +153,7 @@ class DiffusionCLIP(object):
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
 
-        data_folder = "../../../drive/MyDrive/CLIPDiffusion/Mustache/raw_counterfactual"
+        data_folder = f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/raw_counterfactual"
 
         dataset = CustomImageDataset(data_folder, transform=transform)
 
@@ -175,7 +175,7 @@ class DiffusionCLIP(object):
         img_lat_pairs_dic = {}
         for mode in ['train', 'test']:
             img_lat_pairs = []
-            pairs_path = os.path.join('../../../drive/MyDrive/CLIPDiffusion/Mustache/',
+            pairs_path = os.path.join(f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/',
                                       f'{self.config.data.category}_{mode}_t{self.args.t_0}_nim{self.args.n_precomp_img}_ninv{self.args.n_inv_step}_pairs.pth')
             print(pairs_path)
             if os.path.exists(pairs_path):
@@ -267,7 +267,7 @@ class DiffusionCLIP(object):
             # ----------- Train -----------#
             for it_out in range(self.args.n_iter):
                 exp_id = os.path.split(self.args.exp)[-1]
-                save_name = f'../../../drive/MyDrive/CLIPDiffusion/Mustache/checkpoints/{exp_id}_{trg_txt.replace(" ", "_")}-{it_out}.pth'
+                save_name = f'../../../drive/MyDrive/CLIPDiffusion//checkpoints/{exp_id}_{trg_txt.replace(" ", "_")}-{it_out}.pth'
                 if self.args.do_train:
                     if os.path.exists(save_name):
                         print(f'{save_name} already exists.')

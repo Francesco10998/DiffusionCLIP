@@ -13,6 +13,9 @@ from configs.paths_config import HYBRID_MODEL_PATHS
 def parse_args_and_config():
     parser = argparse.ArgumentParser(description=globals()['__doc__'])
 
+    #Dataset Path
+    parser.add_argument('--dataset_path', type=str, default="glasses", help='# path for dataset and weigths')
+
     # Mode
     parser.add_argument('--clip_finetune', action='store_true')
     parser.add_argument('--clip_latent_optim', action='store_true')

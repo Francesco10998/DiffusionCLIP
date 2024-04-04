@@ -267,7 +267,7 @@ class DiffusionCLIP(object):
             # ----------- Train -----------#
             for it_out in range(self.args.n_iter):
                 exp_id = os.path.split(self.args.exp)[-1]
-                save_name = f'../../../drive/MyDrive/CLIPDiffusion/checkpoints/{exp_id}_{trg_txt.replace(" ", "_")}-{it_out}.pth'
+                save_name = f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{exp_id}_{trg_txt.replace(" ", "_")}-{it_out}.pth'
                 if self.args.do_train:
                     if os.path.exists(save_name):
                         print(f'{save_name} already exists.')

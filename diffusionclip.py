@@ -329,7 +329,7 @@ class DiffusionCLIP(object):
                 if self.args.do_test:
                     if not self.args.do_train:
                         print(save_name)
-                        model.module.load_state_dict(torch.load(save_name))
+                        model.module.load_state_dict(torch.load("../../../drive/MyDrive/CLIPDiffusion/Mustache/checkpoints/test_FT_CelebA_HQ_angry_t500_ninv40_ngen4_id1.0_l11.0_lr8e-06_angry_face-5.pth"))
 
                     model.eval()
                     img_lat_pairs = img_lat_pairs_dic[mode]
@@ -622,7 +622,7 @@ class DiffusionCLIP(object):
                 if self.args.do_test:
                     if not self.args.do_train:
                         print(save_name)
-                        model.module.load_state_dict(torch.load(save_name))
+                        model.module.load_state_dict(torch.load())
 
                     model.eval()
                     img_lat_pairs = img_lat_pairs_dic[mode]
@@ -647,6 +647,7 @@ class DiffusionCLIP(object):
                             print(f"Eval {step}-{it_out}")
                             tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
                                                                        f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
+                            tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/Mustache/OurGeneratedImages/image{step}')
                             if step == self.args.n_test_img - 1:
                                 break
 

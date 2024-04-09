@@ -152,17 +152,17 @@ class DiffusionCLIP(object):
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
+        """
+        #data_folder = f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/raw_counterfactual"
 
-        data_folder = f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/raw_counterfactual"
-
-        dataset = CustomImageDataset(data_folder, transform=transform)
+        #dataset = CustomImageDataset(data_folder, transform=transform)
 
         batch_size = 1
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
         for images in dataloader:
             counterfactual_array.append(images)
-
+        """
         ############################################################
 
         # ----------- Precompute Latents -----------#
@@ -294,7 +294,7 @@ class DiffusionCLIP(object):
                                                        learn_sigma=learn_sigma)
 
                                     progress_bar.update(1)
-
+                            """
                             #loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
                             #loss_clip = (2 - clip_loss_func(x0, x)) / 2
                             counterfactual_array[step] = counterfactual_array[step].to('cuda')
@@ -302,6 +302,14 @@ class DiffusionCLIP(object):
                             loss_clip = -torch.log(loss_clip)
                             loss_id = torch.mean(id_loss_func(counterfactual_array[step], x))
                             loss_l1 = nn.L1Loss()(counterfactual_array[step], x)
+                            loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
+                            loss.backward()
+                            """
+
+                            loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
+                            loss_clip = -torch.log(loss_clip)
+                            loss_id = torch.mean(id_loss_func(x0, x))
+                            loss_l1 = nn.L1Loss()(x0, x)
                             loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
                             loss.backward()
 
@@ -317,12 +325,12 @@ class DiffusionCLIP(object):
                             print(f"Training for 1 image takes {time_in_end - time_in_start:.4f}s")
                             if step == self.args.n_train_img - 1:
                                 break
-
-                        if isinstance(model, nn.DataParallel):
-                            torch.save(model.module.state_dict(), save_name)
-                        else:
-                            torch.save(model.state_dict(), save_name)
-                        print(f'Model {save_name} is saved.')
+                        if (it_out == 5 or it_out ==6):
+                          if isinstance(model, nn.DataParallel):
+                              torch.save(model.module.state_dict(), save_name)
+                          else:
+                              torch.save(model.state_dict(), save_name)
+                          print(f'Model {save_name} is saved.')
                         scheduler_ft.step()
 
                 # ----------- Eval -----------#
@@ -648,7 +656,7 @@ class DiffusionCLIP(object):
                             print(f"Eval {step}-{it_out}")
                             tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
                                                                        f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
-                            tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/Mustache/OurGeneratedImages/image{step}')
+                            tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/Mustache/OurGeneratedImages/image{step}.png')
                             if step == self.args.n_test_img - 1:
                                 break
 

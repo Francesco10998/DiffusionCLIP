@@ -353,6 +353,7 @@ class DiffusionCLIP(object):
                             print(f"Eval {step}-{it_out}")
                             tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
                                                                        f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
+                            tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/Mustache/OurGeneratedImages/image{step}.png')
                             if step == self.args.n_test_img - 1:
                                 break
 

@@ -108,25 +108,33 @@ class DiffusionCLIP(object):
 
         # ----------- Loss -----------#
         print("Loading losses")
-        clip_loss_func = CLIPLoss(
-            self.device,
-            lambda_direction=0,
-            our_lambda_direction=1,
-            lambda_patch=0,
-            lambda_global=0,
-            lambda_manifold=0,
-            lambda_texture=0,
-            clip_model=self.args.clip_model_name)
-        id_loss_func = id_loss.IDLoss().to(self.device).eval()
+        if(self.args.version == "counterfactual"):
+            clip_loss_func = CLIPLoss(
+                self.device,
+                lambda_direction=0,
+                our_lambda_direction=1,
+                lambda_patch=0,
+                lambda_global=0,
+                lambda_manifold=0,
+                lambda_texture=0,
+                clip_model=self.args.clip_model_name)
+            id_loss_func = id_loss.IDLoss().to(self.device).eval()
+        if(self.args.version == "standard"):
+            clip_loss_func = CLIPLoss(
+                self.device,
+                lambda_direction=1,
+                our_lambda_direction=0,
+                lambda_patch=0,
+                lambda_global=0,
+                lambda_manifold=0,
+                lambda_texture=0,
+                clip_model=self.args.clip_model_name)
+            id_loss_func = id_loss.IDLoss().to(self.device).eval()
 
-        ###### GET COUNTERFACTUAL DATASET #############################à
+        ###### GET COUNTERFACTUAL DATASET #############################
         from torch.utils.data import DataLoader, Dataset
         from torchvision import transforms
         from PIL import Image
-        
-        print("Computing counterfactual")
-
-        counterfactual_array = []
 
         class CustomImageDataset(Dataset):
             def __init__(self, data_folder, transform=None):
@@ -152,16 +160,21 @@ class DiffusionCLIP(object):
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
-        
-        data_folder = f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/raw_counterfactual"
 
-        dataset = CustomImageDataset(data_folder, transform=transform)
-
-        batch_size = 1
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-
-        for images in dataloader:
-            counterfactual_array.append(images)
+        if(self.args.version == "counterfactual"):
+            print("Computing counterfactual")
+    
+            counterfactual_array = []
+            
+            data_folder = f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/raw_counterfactual"
+    
+            dataset = CustomImageDataset(data_folder, transform=transform)
+    
+            batch_size = 1
+            dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    
+            for images in dataloader:
+                counterfactual_array.append(images)
         
         ############################################################
 
@@ -295,27 +308,29 @@ class DiffusionCLIP(object):
                                                        learn_sigma=learn_sigma)
 
                                     progress_bar.update(1)
+
+                            ##### new loss ##########
+                            if(self.args.version == "counterfactual"):
+                                #loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
+                                #loss_clip = (2 - clip_loss_func(x0, x)) / 2
+                                counterfactual_array[step] = counterfactual_array[step].to('cuda')
+                                loss_clip = (2 - clip_loss_func(counterfactual_array[step], x)) / 2
+                                loss_clip = -torch.log(loss_clip)
+                                loss_id = torch.mean(id_loss_func(counterfactual_array[step], x))
+                                loss_l1 = nn.L1Loss()(counterfactual_array[step], x)
+                                loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
+                                loss.backward()
+                            #######################
                             
-                            #loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
-                            #loss_clip = (2 - clip_loss_func(x0, x)) / 2
-                            counterfactual_array[step] = counterfactual_array[step].to('cuda')
-                            loss_clip = (2 - clip_loss_func(counterfactual_array[step], x)) / 2
-                            loss_clip = -torch.log(loss_clip)
-                            loss_id = torch.mean(id_loss_func(counterfactual_array[step], x))
-                            loss_l1 = nn.L1Loss()(counterfactual_array[step], x)
-                            loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
-                            loss.backward()
-                            
-                            """
                             #### old loss ######
-                            loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
-                            loss_clip = -torch.log(loss_clip)
-                            loss_id = torch.mean(id_loss_func(x0, x))
-                            loss_l1 = nn.L1Loss()(x0, x)
-                            loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
-                            loss.backward()
+                            if(self.args.version =="standard"):
+                                loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
+                                loss_clip = -torch.log(loss_clip)
+                                loss_id = torch.mean(id_loss_func(x0, x))
+                                loss_l1 = nn.L1Loss()(x0, x)
+                                loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
+                                loss.backward()
                             ###################
-                            """
 
                             optim_ft.step()
                             print(f"CLIP {step}-{it_out}: loss_id: {loss_id:.3f}, loss_clip: {loss_clip:.3f}")

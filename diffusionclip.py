@@ -161,6 +161,8 @@ class DiffusionCLIP(object):
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
 
+        counterfactual_array = []
+
         if(self.args.version == "counterfactual"):
             print("Computing counterfactual")
     
@@ -338,7 +340,8 @@ class DiffusionCLIP(object):
                             if self.args.save_train_image:
                                 tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
                                                                            f'train_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_train_step}.png'))
-                                tvu.save_image((counterfactual_array[step] + 1) * 0.5, os.path.join(self.args.image_folder,
+                                if(self.args.version == "counterfactual" and it_out==0):
+                                  tvu.save_image((counterfactual_array[step] + 1) * 0.5, os.path.join(self.args.image_folder,
                                                                            f'counterfactual_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_train_step}.png'))
                             time_in_end = time.time()
                             print(f"Training for 1 image takes {time_in_end - time_in_start:.4f}s")

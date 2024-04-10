@@ -152,17 +152,17 @@ class DiffusionCLIP(object):
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
-        """
-        #data_folder = f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/raw_counterfactual"
+        
+        data_folder = f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/raw_counterfactual"
 
-        #dataset = CustomImageDataset(data_folder, transform=transform)
+        dataset = CustomImageDataset(data_folder, transform=transform)
 
         batch_size = 1
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
         for images in dataloader:
             counterfactual_array.append(images)
-        """
+        
         ############################################################
 
         # ----------- Precompute Latents -----------#
@@ -267,7 +267,8 @@ class DiffusionCLIP(object):
             # ----------- Train -----------#
             for it_out in range(self.args.n_iter):
                 exp_id = os.path.split(self.args.exp)[-1]
-                save_name = f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{exp_id}_{trg_txt.replace(" ", "_")}-{it_out}.pth'
+                #save_name = f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{exp_id}_{trg_txt.replace(" ", "_")}-{it_out}.pth'
+                save_name = f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{self.args.n_iter}.pth'
                 if self.args.do_train:
                     if os.path.exists(save_name):
                         print(f'{save_name} already exists.')
@@ -294,7 +295,7 @@ class DiffusionCLIP(object):
                                                        learn_sigma=learn_sigma)
 
                                     progress_bar.update(1)
-                            """
+                            
                             #loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
                             #loss_clip = (2 - clip_loss_func(x0, x)) / 2
                             counterfactual_array[step] = counterfactual_array[step].to('cuda')
@@ -304,14 +305,17 @@ class DiffusionCLIP(object):
                             loss_l1 = nn.L1Loss()(counterfactual_array[step], x)
                             loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
                             loss.backward()
+                            
                             """
-
+                            #### old loss ######
                             loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
                             loss_clip = -torch.log(loss_clip)
                             loss_id = torch.mean(id_loss_func(x0, x))
                             loss_l1 = nn.L1Loss()(x0, x)
                             loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
                             loss.backward()
+                            ###################
+                            """
 
                             optim_ft.step()
                             print(f"CLIP {step}-{it_out}: loss_id: {loss_id:.3f}, loss_clip: {loss_clip:.3f}")
@@ -325,7 +329,7 @@ class DiffusionCLIP(object):
                             print(f"Training for 1 image takes {time_in_end - time_in_start:.4f}s")
                             if step == self.args.n_train_img - 1:
                                 break
-                        if (it_out == 5 or it_out ==6):
+                        if (it_out == 5 or it_out ==6):## save only weghts of 6 and 7 epoch
                           if isinstance(model, nn.DataParallel):
                               torch.save(model.module.state_dict(), save_name)
                           else:
@@ -336,8 +340,9 @@ class DiffusionCLIP(object):
                 # ----------- Eval -----------#
                 if self.args.do_test:
                     if not self.args.do_train:
-                        print(save_name)
-                        model.module.load_state_dict(torch.load("../../../drive/MyDrive/CLIPDiffusion/Mustache/checkpoints/test_FT_CelebA_HQ_angry_t500_ninv40_ngen4_id1.0_l11.0_lr8e-06_angry_face-5.pth"))
+                        print("loading following pth file:")
+                        print(f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weight_{self.args.weight_epoch}.pth")
+                        model.module.load_state_dict(torch.load(f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weight_{self.args.weight_epoch}.pth"))
 
                     model.eval()
                     img_lat_pairs = img_lat_pairs_dic[mode]
@@ -361,7 +366,8 @@ class DiffusionCLIP(object):
                             print(f"Eval {step}-{it_out}")
                             tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
                                                                        f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
-                            tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/Mustache/OurGeneratedImages/image{step}.png')
+                            if(self.args.save_test_drive):
+                                tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/Mustache/OurGeneratedImages/class/image{step}.png')
                             if step == self.args.n_test_img - 1:
                                 break
 

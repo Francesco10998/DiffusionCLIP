@@ -13,8 +13,10 @@ from configs.paths_config import HYBRID_MODEL_PATHS
 def parse_args_and_config():
     parser = argparse.ArgumentParser(description=globals()['__doc__'])
 
-    #Dataset Path
+    #our parameters
     parser.add_argument('--dataset_path', type=str, default="glasses", help='# path for dataset and weigths')
+    parser.add_argument('--save_test_drive', type=str, default="False", help='# variable to decide if save or not test images on drive')
+    parser.add_argument('--weight_epoch', type=str, default="5", help='# epoch of the weight to load')
 
     # Mode
     parser.add_argument('--clip_finetune', action='store_true')

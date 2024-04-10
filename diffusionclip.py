@@ -385,7 +385,7 @@ class DiffusionCLIP(object):
                             tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
                                                                        f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
                             if(self.args.save_test_drive and (not self.args.do_train)):
-                                tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/Mustache/OurGeneratedImages/class/image{step}.png')
+                                tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/OurGeneratedImages/class/image{step}.png')
                             if step == self.args.n_test_img - 1:
                                 break
 

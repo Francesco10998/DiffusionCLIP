@@ -342,7 +342,7 @@ class DiffusionCLIP(object):
                     if not self.args.do_train:
                         print("loading following pth file:")
                         print(f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weight_{self.args.weight_epoch}.pth")
-                        model.module.load_state_dict(torch.load(f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weight_{self.args.weight_epoch}.pth"))
+                        model.module.load_state_dict(torch.load(f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{self.args.weight_epoch}.pth"))
 
                     model.eval()
                     img_lat_pairs = img_lat_pairs_dic[mode]

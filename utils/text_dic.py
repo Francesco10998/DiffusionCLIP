@@ -4,7 +4,7 @@ SRC_TRG_TXT_DIC = {
                ['person with eyeglasses']),
      'mustache': (['person'],
                ['person with mustache']),
-    'mustache': (['person'],
+    'blackmustache': (['person'],
                ['person with black mustache']),
     'tanned': (['face'],
                ['tanned face']),

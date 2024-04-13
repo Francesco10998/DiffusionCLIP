@@ -4,6 +4,7 @@ DATASET_PATHS = {
 	'AFHQ': 'data/afhq',
 	'LSUN':  'data/lsun',
     'IMAGENET': 'data/imagenet/',
+    'retinal': 'data/retinal/',
 }
 
 MODEL_PATHS = {

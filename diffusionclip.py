@@ -74,7 +74,7 @@ class DiffusionCLIP(object):
         else:
             raise ValueError
         """
-        url = "../../../drive/MyDrive/CLIPDiffusion/celeba_hq.ckpt"
+        url = "../../../drive/MyDrive/CLIPDiffusionRetinal/ema_0.9999_290000_eyepacs_extra_data_balancing_4_classes_v1.pt"
 
         if self.config.data.dataset in ["CelebA_HQ", "LSUN"]:
             model = DDPM(self.config)
@@ -84,12 +84,12 @@ class DiffusionCLIP(object):
                 init_ckpt = torch.load(url, map_location=self.device)
             learn_sigma = False
             print("Original diffusion Model loaded.")
-        elif self.config.data.dataset in ["FFHQ", "AFHQ"]:
-            model = i_DDPM(self.config.data.dataset)
+        elif self.config.data.dataset in ["FFHQ", "AFHQ", "Retinal_Fundus"]:
+            model = i_DDPM("Retinal_Fundus")
             if self.args.model_path:
                 init_ckpt = torch.load(self.args.model_path)
             else:
-                init_ckpt = torch.load(MODEL_PATHS[self.config.data.dataset])
+                init_ckpt = torch.load(url)
             learn_sigma = True
             print("Improved diffusion Model loaded.")
         else:
@@ -157,6 +157,7 @@ class DiffusionCLIP(object):
                 return image
 
         transform = transforms.Compose([
+            transforms.Lambda(lambda img: img.convert('RGB')),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])

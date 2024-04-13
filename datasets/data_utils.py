@@ -13,6 +13,8 @@ def get_dataset(dataset_type, dataset_paths, config, target_class_num=None, gend
         train_dataset, test_dataset = get_celeba_dataset(dataset_paths['CelebA_HQ'], config)
     elif dataset_type == "IMAGENET":
         train_dataset, test_dataset = get_imagenet_dataset(dataset_paths['IMAGENET'], config, class_num=target_class_num)
+    elif dataset_type == "Retinal_Fundus":
+        train_dataset, test_dataset = get_celeba_dataset(dataset_paths['retinal'], config)
     else:
         raise ValueError
 

@@ -60,6 +60,25 @@ RETINAL_DICT = dict(
     use_new_attention_order=False,
 )
 
+CHEST_DICT = dict(
+    attention_resolutions="16",
+    class_cond=True,
+    dropout=0.0,
+    image_size=256,
+    learn_sigma=True,
+    num_channels=128,
+    num_head_channels=64,
+    num_res_blocks=2,
+    resblock_updown=False,
+    use_fp16=False,
+    use_scale_shift_norm=False,
+    num_heads=1,
+    num_heads_upsample=-1,
+    channel_mult="",
+    use_checkpoint=False,
+    use_new_attention_order=False,
+)
+
 
 def create_model(
     image_size,
@@ -99,14 +118,14 @@ def create_model(
 
     return UNetModel(
         image_size=image_size,
-        in_channels=3,
+        in_channels=3,   ###1
         model_channels=num_channels,
-        out_channels=(3 if not learn_sigma else 6),
+        out_channels=(3 if not learn_sigma else 6), ###2
         num_res_blocks=num_res_blocks,
         attention_resolutions=tuple(attention_ds),
         dropout=dropout,
         channel_mult=channel_mult,
-        num_classes=(NUM_CLASSES if class_cond else None),
+        num_classes=(NUM_CLASSES if class_cond else None), ###2
         use_checkpoint=use_checkpoint,
         use_fp16=use_fp16,
         num_heads=num_heads,
@@ -125,6 +144,8 @@ def i_DDPM(dataset_name = 'AFHQ'):
         return create_model(**IMAGENET_DICT)
     elif dataset_name == 'Retinal_Fundus':
         return create_model(**RETINAL_DICT)
+    elif dataset_name == 'Chexpert':
+        return create_model(**CHEST_DICT)
     else:
         print('Not implemented.')
         exit()

@@ -348,12 +348,12 @@ class DiffusionCLIP(object):
                             print(f"Training for 1 image takes {time_in_end - time_in_start:.4f}s")
                             if step == self.args.n_train_img - 1:
                                 break
-                        if (it_out == 4 or it_out ==5):## save only weghts of 5 and 6 epoch
-                          if isinstance(model, nn.DataParallel):
-                              torch.save(model.module.state_dict(), save_name)
-                          else:
-                              torch.save(model.state_dict(), save_name)
-                          print(f'Model {save_name} is saved.')
+                                
+                        if isinstance(model, nn.DataParallel):
+                            torch.save(model.module.state_dict(), save_name)
+                        else:
+                            torch.save(model.state_dict(), save_name)
+                        print(f'Model {save_name} is saved.')
                         scheduler_ft.step()
 
                 # ----------- Eval -----------#

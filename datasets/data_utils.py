@@ -3,6 +3,7 @@ from .CelebA_HQ_dataset import get_celeba_dataset
 from .LSUN_dataset import get_lsun_dataset
 from torch.utils.data import DataLoader
 from .IMAGENET_dataset import get_imagenet_dataset
+from .chest_dataset import get_chest_dataset
 
 def get_dataset(dataset_type, dataset_paths, config, target_class_num=None, gender=None):
     if dataset_type == 'AFHQ':
@@ -16,7 +17,7 @@ def get_dataset(dataset_type, dataset_paths, config, target_class_num=None, gend
     elif dataset_type == "Retinal_Fundus":
         train_dataset, test_dataset = get_celeba_dataset(dataset_paths['retinal'], config)
     elif dataset_type == "Chexpert":
-        train_dataset, test_dataset = get_celeba_dataset(dataset_paths['chest'], config)
+        train_dataset, test_dataset = get_chest_dataset(dataset_paths['chest'], config)
     else:
         raise ValueError
 

@@ -74,7 +74,16 @@ class DiffusionCLIP(object):
         else:
             raise ValueError
         """
-        url = "../../../drive/MyDrive/CLIPDiffusionRetinal/ema_0.9999_290000_eyepacs_extra_data_balancing_4_classes_v1.pt"
+
+        ##### Selet Diffusion Model weights related to the selected dataset #######
+        if(self.config.data.datset == "Retinal_Fundus"):
+            url = "../../../drive/MyDrive/CLIPDiffusionRetinal/ema_0.9999_290000_eyepacs_extra_data_balancing_4_classes_v1.pt"
+        elif(self.config.data.datset == "AFHQ"):
+            url = "../../../drive/MyDrive/CLIPDiffusion/afhq_dog_4m.pt"
+        elif(self.config.data.datset == "CelebA_HQ"):
+            url = "../../../drive/MyDrive/CLIPDiffusion/celeba_hq.ckpt"
+        elif(self.config.data.datset == "Chexpert"):
+            url = "../../../drive/MyDrive/ChestDiffusion/modelchex050000.pt"
 
         if self.config.data.dataset in ["CelebA_HQ", "LSUN"]:
             model = DDPM(self.config)
@@ -84,8 +93,8 @@ class DiffusionCLIP(object):
                 init_ckpt = torch.load(url, map_location=self.device)
             learn_sigma = False
             print("Original diffusion Model loaded.")
-        elif self.config.data.dataset in ["FFHQ", "AFHQ", "Retinal_Fundus"]:
-            model = i_DDPM("Retinal_Fundus")
+        elif self.config.data.dataset in ["FFHQ", "AFHQ", "Retinal_Fundus", "Chexpert"]:
+            model = i_DDPM(self.config.data.dataset)
             if self.args.model_path:
                 init_ckpt = torch.load(self.args.model_path)
             else:
@@ -156,11 +165,18 @@ class DiffusionCLIP(object):
 
                 return image
 
-        transform = transforms.Compose([
-            transforms.Lambda(lambda img: img.convert('RGB')),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-        ])
+        if(self.args.dataset_path == "Chexpert" or self.args.dataset_path == "ChexpertAtel"):
+            transform = transforms.Compose([
+                transforms.Grayscale(),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5), (0.5))
+            ])
+        else:
+            transform = transforms.Compose([
+                transforms.Lambda(lambda img: img.convert('RGB')),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ])
 
         counterfactual_array = []
 

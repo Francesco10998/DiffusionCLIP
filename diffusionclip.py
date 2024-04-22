@@ -117,28 +117,56 @@ class DiffusionCLIP(object):
 
         # ----------- Loss -----------#
         print("Loading losses")
-        if(self.args.version == "counterfactual"):
-            clip_loss_func = CLIPLoss(
-                self.device,
-                lambda_direction=0,
-                our_lambda_direction=1,
-                lambda_patch=0,
-                lambda_global=0,
-                lambda_manifold=0,
-                lambda_texture=0,
-                clip_model=self.args.clip_model_name)
-            id_loss_func = id_loss.IDLoss().to(self.device).eval()
-        if(self.args.version == "standard"):
-            clip_loss_func = CLIPLoss(
-                self.device,
-                lambda_direction=1,
-                our_lambda_direction=0,
-                lambda_patch=0,
-                lambda_global=0,
-                lambda_manifold=0,
-                lambda_texture=0,
-                clip_model=self.args.clip_model_name)
-            id_loss_func = id_loss.IDLoss().to(self.device).eval()
+        if(self.config.dataset == "Chexpert"):
+            if(self.args.version == "counterfactual"):
+                clip_loss_func = CLIPLoss(
+                    self.device,
+                    lambda_direction=0,
+                    our_lambda_direction=1,
+                    lambda_patch=0,
+                    lambda_global=0,
+                    lambda_manifold=0,
+                    lambda_texture=0,
+                    clip_model=self.args.clip_model_name,
+                    grayscale=1)
+                id_loss_func = id_loss.IDLoss().to(self.device).eval()
+            if(self.args.version == "standard"):
+                clip_loss_func = CLIPLoss(
+                    self.device,
+                    lambda_direction=1,
+                    our_lambda_direction=0,
+                    lambda_patch=0,
+                    lambda_global=0,
+                    lambda_manifold=0,
+                    lambda_texture=0,
+                    clip_model=self.args.clip_model_name,
+                    grayscale=1)
+                id_loss_func = id_loss.IDLoss().to(self.device).eval()
+        else:
+            if(self.args.version == "counterfactual"):
+                clip_loss_func = CLIPLoss(
+                    self.device,
+                    lambda_direction=0,
+                    our_lambda_direction=1,
+                    lambda_patch=0,
+                    lambda_global=0,
+                    lambda_manifold=0,
+                    lambda_texture=0,
+                    clip_model=self.args.clip_model_name,
+                    grayscale=0)
+                id_loss_func = id_loss.IDLoss().to(self.device).eval()
+            if(self.args.version == "standard"):
+                clip_loss_func = CLIPLoss(
+                    self.device,
+                    lambda_direction=1,
+                    our_lambda_direction=0,
+                    lambda_patch=0,
+                    lambda_global=0,
+                    lambda_manifold=0,
+                    lambda_texture=0,
+                    clip_model=self.args.clip_model_name,
+                    grayscale=0)
+                id_loss_func = id_loss.IDLoss().to(self.device).eval()
 
         ###### GET COUNTERFACTUAL DATASET #############################
         from torch.utils.data import DataLoader, Dataset

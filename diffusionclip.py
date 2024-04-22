@@ -78,11 +78,11 @@ class DiffusionCLIP(object):
         ##### Selet Diffusion Model weights related to the selected dataset #######
         if(self.config.data.dataset == "Retinal_Fundus"):
             url = "../../../drive/MyDrive/CLIPDiffusionRetinal/ema_0.9999_290000_eyepacs_extra_data_balancing_4_classes_v1.pt"
-        elif(self.config.data.datset == "AFHQ"):
+        elif(self.config.data.dataset == "AFHQ"):
             url = "../../../drive/MyDrive/CLIPDiffusion/afhq_dog_4m.pt"
-        elif(self.config.data.datset == "CelebA_HQ"):
+        elif(self.config.data.dataset == "CelebA_HQ"):
             url = "../../../drive/MyDrive/CLIPDiffusion/celeba_hq.ckpt"
-        elif(self.config.data.datset == "Chexpert"):
+        elif(self.config.data.dataset == "Chexpert"):
             url = "../../../drive/MyDrive/ChestDiffusion/modelchex050000.pt"
 
         if self.config.data.dataset in ["CelebA_HQ", "LSUN"]:

@@ -26,7 +26,7 @@ def get_dataloader(train_dataset, test_dataset, bs_train=1, num_workers=0):
         train_dataset,
         batch_size=bs_train,
         drop_last=True,
-        shuffle=True,
+        shuffle=False,
         sampler=None,
         num_workers=num_workers,
         pin_memory=True,
@@ -36,7 +36,7 @@ def get_dataloader(train_dataset, test_dataset, bs_train=1, num_workers=0):
         batch_size=1,
         drop_last=True,
         sampler=None,
-        shuffle=True,
+        shuffle=False,
         num_workers=num_workers,
         pin_memory=True,
     )

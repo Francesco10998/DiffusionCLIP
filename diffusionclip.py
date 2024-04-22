@@ -384,7 +384,10 @@ class DiffusionCLIP(object):
                             ###################
 
                             optim_ft.step()
-                            print(f"CLIP {step}-{it_out}: loss_id: {loss_id:.3f}, loss_clip: {loss_clip:.3f}")
+                            if(self.config.data.dataset != "Chexpert"):
+                                print(f"CLIP {step}-{it_out}: loss_id: {loss_id:.3f}, loss_clip: {loss_clip:.3f}")
+                            else:
+                                print(f"CLIP {step}-{it_out}: loss_clip: {loss_clip:.3f}")
 
                             if self.args.save_train_image:
                                 tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,

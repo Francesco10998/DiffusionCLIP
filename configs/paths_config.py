@@ -1,7 +1,7 @@
 DATASET_PATHS = {
 	'FFHQ': 'data/celeba_hq/',
 	'CelebA_HQ': 'data/celeba_hq/',
-	'AFHQ': 'data/afhq',
+	'AFHQ': 'data/afhq/',
 	'LSUN':  'data/lsun',
     'IMAGENET': 'data/imagenet/',
     'retinal': 'data/retinal/',

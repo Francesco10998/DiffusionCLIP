@@ -363,9 +363,13 @@ class DiffusionCLIP(object):
                                 counterfactual_array[step] = counterfactual_array[step].to('cuda')
                                 loss_clip = (2 - clip_loss_func(counterfactual_array[step], x)) / 2
                                 loss_clip = -torch.log(loss_clip)
-                                loss_id = torch.mean(id_loss_func(counterfactual_array[step], x))
+                                if(self.config.data.dataset != "Chexpert"):
+                                    loss_id = torch.mean(id_loss_func(counterfactual_array[step], x))
                                 loss_l1 = nn.L1Loss()(counterfactual_array[step], x)
-                                loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
+                                if(self.config.data.dataset != "Chexpert"):
+                                    loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
+                                else:
+                                    loss = self.args.clip_loss_w * loss_clip + self.args.l1_loss_w * loss_l1
                                 loss.backward()
                             #######################
                             

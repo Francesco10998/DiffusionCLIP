@@ -117,7 +117,7 @@ class DiffusionCLIP(object):
 
         # ----------- Loss -----------#
         print("Loading losses")
-        if(self.config.dataset == "Chexpert"):
+        if(self.config.data.dataset == "Chexpert"):
             if(self.args.version == "counterfactual"):
                 clip_loss_func = CLIPLoss(
                     self.device,

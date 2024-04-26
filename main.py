@@ -18,6 +18,7 @@ def parse_args_and_config():
     parser.add_argument('--version', type=str, default="counterfactual", help='# use standard model or the modified version that use counterfactual')
     parser.add_argument('--save_test_drive', type=int, default=0, help='# variable to decide if save or not test images on drive')
     parser.add_argument('--weight_epoch', type=str, default="5", help='# epoch of the weight to load')
+    parser.add_argument('--model_embedding', type=str, default="CLIP", help='# which model use to compute embedding for the loss')
 
     # Mode
     parser.add_argument('--clip_finetune', action='store_true')

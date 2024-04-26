@@ -90,67 +90,64 @@ def saveMask(f,img,h,w,hLoc,wLoc,imH,imgW,no_post=False):
 			imgPost = resize(imgPost[p:-p,np.abs(w):(w+wLoc)],
 							(imH,imW))
 
-		imsave(f.replace('.png','_post.png'),img_as_ubyte(imgPost > 0.5))
+		#imsave(f.replace('.png','_post.png'),img_as_ubyte(imgPost > 0.5))
+		return mg_as_ubyte(imgPost > 0.5)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--data', type=str, default='.', help='Path to input files')
-parser.add_argument('--model', type=str, default='saved_models/lungVAE.pt', help='Path to trained model')
-parser.add_argument('--hidden', type=int, default=16, help='Hidden units')
-parser.add_argument('--latent', type=int, default=8, help='Latent dim')
-parser.add_argument('--saveLoc', type=str, default='', help='Path to save predictions')
-parser.add_argument('--unet',action='store_true', default=False,help='Use only U-Net.')
-parser.add_argument('--dicom',action='store_true', default=False,help='DICOM inputs.')
-parser.add_argument('--no_post',action='store_true', default=False,help='Do not post process predictions')
-parser.add_argument('--no_preprocess',action='store_true', 
-						default=False,help='Do not preprocess input images')
-parser.add_argument('--padding', type=int, default=32, help='Zero padding')
+def makeSegmentation(image):
+	model = "saved_models/lungVAE.pt"
+	hidden = 16
+	latent = 8
+	saveLoc = ""
+	unet = False
+	dicom = False
+	no_post = False
+	no_preprocess = False
+	padding = 32
 
-
-args = parser.parse_args()
-p = args.padding
-print("Loading "+args.model)
-if 'unet' in args.model:
-	args.unet = True
-	args.hidden = int(1.5*args.hidden)
-else:
-	args.unet = False
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-net = uVAE(nhid=args.hidden,nlatent=args.latent,unet=args.unet)
-net.load_state_dict(torch.load(args.model,map_location=device))
-net.to(device)
-t = time.strftime("%Y%m%d_%H_%M")
-
-if args.saveLoc is '':
-	save_dir = args.data+'pred_'+t+'/'
-else:
-	save_dir = args.saveLoc+'pred_'+t+'/'
-if not os.path.exists(save_dir):
-	os.mkdir(save_dir)
-
-nParam = sum(p.numel() for p in net.parameters() if p.requires_grad)
-print("Model "+args.model.split('/')[-1]+" Number of parameters:%d"%(nParam))
-
-if args.dicom:
-	filetype = 'DCM'
-else:
-	filetype= 'png'
-
-files = list(set(glob(args.data+'*.'+filetype)) \
-			- set(glob(args.data+'*_mask*.'+filetype)) \
-			- set(glob(args.data+'*label*.'+filetype)))
-
-files = sorted(files)
-for fIdx in range(len(files)):
-		f = files[fIdx]
-		fName = f.split('/')[-1]
-		img, roi, h, w, hLoc, wLoc, imH, imW = loadDCM(f,
-													no_preprocess=args.no_preprocess,
-													dicom=args.dicom)
-		img = img.to(device)
-		_,mask = net(img)
-		mask = torch.sigmoid(mask*roi)
-		f = save_dir+fName.replace('.'+filetype,'_mask.png')
-
-		saveMask(f,mask.squeeze(),h,w,hLoc,wLoc,imH,imW,args.no_post)
-		print("Segmenting %d/%d"%(fIdx,len(files)))
+	p = padding
+	print("Loading "+model)
+	if 'unet' in model:
+		unet = True
+		hidden = int(1.5*hidden)
+	else:
+		unet = False
+	
+	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+	net = uVAE(nhid=hidden,nlatent=latent,unet=unet)
+	net.load_state_dict(torch.load(model,map_location=device))
+	net.to(device)
+	t = time.strftime("%Y%m%d_%H_%M")
+	
+	if args.saveLoc is '':
+		save_dir = data+'pred_'+t+'/'
+	else:
+		save_dir = saveLoc+'pred_'+t+'/'
+	if not os.path.exists(save_dir):
+		os.mkdir(save_dir)
+	
+	nParam = sum(p.numel() for p in net.parameters() if p.requires_grad)
+	print("Model "+model.split('/')[-1]+" Number of parameters:%d"%(nParam))
+	
+	if dicom:
+		filetype = 'DCM'
+	else:
+		filetype= 'png'
+	
+	files = list(set(glob(data+'*.'+filetype)) \    #########
+				- set(glob(args.data+'*_mask*.'+filetype)) \
+				- set(glob(args.data+'*label*.'+filetype)))
+	
+	files = sorted(files)
+	for fIdx in range(len(files)):
+			f = files[fIdx]
+			fName = f.split('/')[-1]
+			img, roi, h, w, hLoc, wLoc, imH, imW = loadDCM(f,
+														no_preprocess=args.no_preprocess,
+														dicom=args.dicom)
+			img = img.to(device)
+			_,mask = net(img)
+			mask = torch.sigmoid(mask*roi)
+			f = save_dir+fName.replace('.'+filetype,'_mask.png')
+	
+			return saveMask(f,mask.squeeze(),h,w,hLoc,wLoc,imH,imW,args.no_post)
+			print("Segmenting %d/%d"%(fIdx,len(files)))

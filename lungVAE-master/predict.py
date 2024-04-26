@@ -91,7 +91,7 @@ def saveMask(f,img,h,w,hLoc,wLoc,imH,imgW,no_post=False):
 							(imH,imW))
 
 		#imsave(f.replace('.png','_post.png'),img_as_ubyte(imgPost > 0.5))
-		return mg_as_ubyte(imgPost > 0.5)
+		return img_as_ubyte(imgPost > 0.5)
 
 def makeSegmentation(image):
 	model = "saved_models/lungVAE.pt"

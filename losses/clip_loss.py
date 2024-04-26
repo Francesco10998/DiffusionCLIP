@@ -4,6 +4,7 @@ import numpy as np
 
 import clip
 from PIL import Image
+import open_clip
 
 from utils.text_templates import imagenet_templates, part_templates, imagenet_templates_small
 
@@ -28,23 +29,27 @@ class DirectionLoss(torch.nn.Module):
         return self.loss_func(x, y)
 
 class CLIPLoss(torch.nn.Module):
-    def __init__(self, device, lambda_direction=0., our_lambda_direction=1., lambda_patch=0., lambda_global=0., lambda_manifold=0., lambda_texture=0., patch_loss_type='mae', direction_loss_type='cosine', clip_model='ViT-B/32', grayscale=0):
+    def __init__(self, device, lambda_direction=0., our_lambda_direction=1., lambda_patch=0., lambda_global=0., lambda_manifold=0., lambda_texture=0., patch_loss_type='mae', direction_loss_type='cosine', clip_model='ViT-B/32', grayscale=0,model_embedding="CLIP"):
         super(CLIPLoss, self).__init__()
 
         self.device = device
-        self.model, clip_preprocess = clip.load(clip_model, device=self.device)
+        self.model_embedding = model_embedding
+        if(self.model_embedding == "CLIP"):
+            self.model, preprocess = clip.load(clip_model, device=self.device)
+        else:
+            self.model, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k',device=self.device)
 
-        self.clip_preprocess = clip_preprocess
+        self.preprocess = preprocess
 
         if(grayscale == 0):
             self.preprocess = transforms.Compose([transforms.Normalize(mean=[-1.0, -1.0, -1.0], std=[2.0, 2.0, 2.0])] + # Un-normalize from [-1.0, 1.0] (GAN output) to [0, 1].
-                                                  clip_preprocess.transforms[:2] +                                      # to match CLIP input scale assumptions
-                                                  clip_preprocess.transforms[4:])                                       # + skip convert PIL to tensor
+                                                  preprocess.transforms[:2] +                                      # to match CLIP input scale assumptions
+                                                  preprocess.transforms[4:])                                       # + skip convert PIL to tensor
         else:
             self.preprocess = transforms.Compose([transforms.Lambda(lambda x: x.repeat(1, 3, 1, 1)),
                                                   transforms.Normalize(mean=[-1.0, -1.0, -1.0], std=[2.0, 2.0, 2.0])] + # Un-normalize from [-1.0, 1.0] (GAN output) to [0, 1].
-                                                  clip_preprocess.transforms[:2] +                                      # to match CLIP input scale assumptions
-                                                  clip_preprocess.transforms[4:]) 
+                                                  preprocess.transforms[:2] +                                      # to match CLIP input scale assumptions
+                                                  preprocess.transforms[4:]) 
 
         self.target_direction      = None
         self.patch_text_directions = None

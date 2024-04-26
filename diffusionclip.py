@@ -128,7 +128,8 @@ class DiffusionCLIP(object):
                     lambda_manifold=0,
                     lambda_texture=0,
                     clip_model=self.args.clip_model_name,
-                    grayscale=1)
+                    grayscale=1,
+                    model_embedding=self.args.model_embedding)
                 id_loss_func = id_loss.IDLoss().to(self.device).eval()
             if(self.args.version == "standard"):
                 clip_loss_func = CLIPLoss(
@@ -140,7 +141,8 @@ class DiffusionCLIP(object):
                     lambda_manifold=0,
                     lambda_texture=0,
                     clip_model=self.args.clip_model_name,
-                    grayscale=1)
+                    grayscale=1,
+                    model_embedding=self.args.model_embedding)
                 id_loss_func = id_loss.IDLoss().to(self.device).eval()
         else:
             if(self.args.version == "counterfactual"):
@@ -153,7 +155,8 @@ class DiffusionCLIP(object):
                     lambda_manifold=0,
                     lambda_texture=0,
                     clip_model=self.args.clip_model_name,
-                    grayscale=0)
+                    grayscale=0,
+                    model_embedding=self.args.model_embedding)
                 id_loss_func = id_loss.IDLoss().to(self.device).eval()
             if(self.args.version == "standard"):
                 clip_loss_func = CLIPLoss(
@@ -165,7 +168,8 @@ class DiffusionCLIP(object):
                     lambda_manifold=0,
                     lambda_texture=0,
                     clip_model=self.args.clip_model_name,
-                    grayscale=0)
+                    grayscale=0,
+                    model_embedding=self.args.model_embedding)
                 id_loss_func = id_loss.IDLoss().to(self.device).eval()
 
         ###### GET COUNTERFACTUAL DATASET #############################

@@ -77,13 +77,13 @@ class DiffusionCLIP(object):
 
         ##### Selet Diffusion Model weights related to the selected dataset #######
         if(self.config.data.dataset == "Retinal_Fundus"):
-            url = "../../../drive/MyDrive/CLIPDiffusionRetinal/ema_0.9999_290000_eyepacs_extra_data_balancing_4_classes_v1.pt"
+            url = "../drive/MyDrive/CLIPDiffusionRetinal/ema_0.9999_290000_eyepacs_extra_data_balancing_4_classes_v1.pt"
         elif(self.config.data.dataset == "AFHQ"):
-            url = "../../../drive/MyDrive/CLIPDiffusion/afhq_dog_4m.pt"
+            url = "../drive/MyDrive/CLIPDiffusion/afhq_dog_4m.pt"
         elif(self.config.data.dataset == "CelebA_HQ"):
-            url = "../../../drive/MyDrive/CLIPDiffusion/celeba_hq.ckpt"
+            url = "../drive/MyDrive/CLIPDiffusion/celeba_hq.ckpt"
         elif(self.config.data.dataset == "Chexpert"):
-            url = "../../../drive/MyDrive/ChestDiffusion/modelchex050000.pt"
+            url = "../drive/MyDrive/ChestDiffusion/modelchex050000.pt"
 
         if self.config.data.dataset in ["CelebA_HQ", "LSUN"]:
             model = DDPM(self.config)
@@ -217,7 +217,7 @@ class DiffusionCLIP(object):
     
             counterfactual_array = []
             
-            data_folder = f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/raw_counterfactual"
+            data_folder = f"../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/raw_counterfactual"
     
             dataset = CustomImageDataset(data_folder, transform=transform)
     
@@ -239,7 +239,7 @@ class DiffusionCLIP(object):
         img_lat_pairs_dic = {}
         for mode in ['train', 'test']:
             img_lat_pairs = []
-            pairs_path = os.path.join(f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/',
+            pairs_path = os.path.join(f'../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/',
                                       f'{self.config.data.category}_{mode}_t{self.args.t_0}_nim{self.args.n_precomp_img}_ninv{self.args.n_inv_step}_pairs.pth')
             print(pairs_path)
             if os.path.exists(pairs_path):
@@ -332,7 +332,7 @@ class DiffusionCLIP(object):
             for it_out in range(self.args.n_iter):
                 exp_id = os.path.split(self.args.exp)[-1]
                 #save_name = f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{exp_id}_{trg_txt.replace(" ", "_")}-{it_out}.pth'
-                save_name = f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{it_out}.pth'
+                save_name = f'../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{it_out}.pth'
                 if self.args.do_train:
                     if os.path.exists(save_name):
                         print(f'{save_name} already exists.')
@@ -415,8 +415,8 @@ class DiffusionCLIP(object):
                 if self.args.do_test:
                     if not self.args.do_train:
                         print("loading following pth file:")
-                        print(f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weight_{self.args.weight_epoch}.pth")
-                        model.module.load_state_dict(torch.load(f"../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{self.args.weight_epoch}.pth"))
+                        print(f"../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weight_{self.args.weight_epoch}.pth")
+                        model.module.load_state_dict(torch.load(f"../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{self.args.weight_epoch}.pth"))
 
                     model.eval()
                     img_lat_pairs = img_lat_pairs_dic[mode]
@@ -441,7 +441,7 @@ class DiffusionCLIP(object):
                             tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
                                                                        f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
                             if(self.args.save_test_drive and (not self.args.do_train)):
-                                tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/OurGeneratedImages/class/image{step}.png')
+                                tvu.save_image((x + 1) * 0.5,f'../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/OurGeneratedImages/class/image{step}.png')
                             if step == self.args.n_test_img - 1:
                                 break
 
@@ -463,7 +463,7 @@ class DiffusionCLIP(object):
         else:
             raise ValueError
         """
-        url = "../../../drive/MyDrive/celeba_hq.ckpt"
+        url = "../drive/MyDrive/celeba_hq.ckpt"
 
         if self.config.data.dataset in ["CelebA_HQ", "LSUN"]:
             model = DDPM(self.config)
@@ -541,7 +541,7 @@ class DiffusionCLIP(object):
                                               f'{self.config.data.category}_{mode}_t{self.args.t_0}_nim{self.args.n_precomp_img}_ninv{self.args.n_inv_step}_pairs.pth')
 
             else:
-                pairs_path = os.path.join('../../../drive/MyDrive/',
+                pairs_path = os.path.join('../drive/MyDrive/',
                                           f'{self.config.data.category}_{mode}_t{self.args.t_0}_nim{self.args.n_precomp_img}_ninv{self.args.n_inv_step}_pairs.pth')
             print(pairs_path)
             if os.path.exists(pairs_path):
@@ -736,6 +736,6 @@ class DiffusionCLIP(object):
                             print(f"Eval {step}-{it_out}")
                             tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
                                                                        f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
-                            tvu.save_image((x + 1) * 0.5,f'../../../drive/MyDrive/CLIPDiffusion/Mustache/OurGeneratedImages/image{step}.png')
+                            tvu.save_image((x + 1) * 0.5,f'../drive/MyDrive/CLIPDiffusion/Mustache/OurGeneratedImages/image{step}.png')
                             if step == self.args.n_test_img - 1:
                                 break

@@ -58,8 +58,8 @@ class DiffusionCLIP(object):
 
     def clip_finetune(self):
         print(self.args.exp)
-        print(f'   {self.src_txts}')
-        print(f'-> {self.trg_txts}')
+        #print(f'   {self.src_txts}')
+        #print(f'-> {self.trg_txts}')
 
         # ----------- Model -----------#
         """if self.config.data.dataset == "LSUN":
@@ -320,130 +320,134 @@ class DiffusionCLIP(object):
         seq_test = np.linspace(0, 1, self.args.n_test_step) * self.args.t_0
         seq_test = [int(s) for s in list(seq_test)]
         seq_test_next = [-1] + list(seq_test[:-1])
-
+        """
         for src_txt, trg_txt in zip(self.src_txts, self.trg_txts):
             print(f"CHANGE {src_txt} TO {trg_txt}")
-            model.module.load_state_dict(init_ckpt)
-            optim_ft.load_state_dict(init_opt_ckpt)
-            scheduler_ft.load_state_dict(init_sch_ckpt)
-            clip_loss_func.target_direction = None
+        """
+        if (src_txt is not None):
+            print(f"CHANGE {src_txt} TO {trg_txt}")
+        
+        model.module.load_state_dict(init_ckpt)
+        optim_ft.load_state_dict(init_opt_ckpt)
+        scheduler_ft.load_state_dict(init_sch_ckpt)
+        clip_loss_func.target_direction = None
 
-            # ----------- Train -----------#
-            for it_out in range(self.args.n_iter):
-                exp_id = os.path.split(self.args.exp)[-1]
-                #save_name = f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{exp_id}_{trg_txt.replace(" ", "_")}-{it_out}.pth'
-                save_name = f'../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{it_out}.pth'
-                if self.args.do_train:
-                    if os.path.exists(save_name):
-                        print(f'{save_name} already exists.')
-                        model.module.load_state_dict(torch.load(save_name))
-                        continue
-                    else:
-                        for step, (x0, x_id, x_lat) in enumerate(img_lat_pairs_dic['train']):
-                            model.train()
-                            time_in_start = time.time()
+        # ----------- Train -----------#
+        for it_out in range(self.args.n_iter):
+            exp_id = os.path.split(self.args.exp)[-1]
+            #save_name = f'../../../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{exp_id}_{trg_txt.replace(" ", "_")}-{it_out}.pth'
+            save_name = f'../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{it_out}.pth'
+            if self.args.do_train:
+                if os.path.exists(save_name):
+                    print(f'{save_name} already exists.')
+                    model.module.load_state_dict(torch.load(save_name))
+                    continue
+                else:
+                    for step, (x0, x_id, x_lat) in enumerate(img_lat_pairs_dic['train']):
+                        model.train()
+                        time_in_start = time.time()
 
-                            optim_ft.zero_grad()
-                            x = x_lat.clone()
+                        optim_ft.zero_grad()
+                        x = x_lat.clone()
 
-                            with tqdm(total=len(seq_train), desc=f"CLIP iteration") as progress_bar:
-                                for t_it, (i, j) in enumerate(zip(reversed(seq_train), reversed(seq_train_next))):
-                                    t = (torch.ones(n) * i).to(self.device)
-                                    t_next = (torch.ones(n) * j).to(self.device)
+                        with tqdm(total=len(seq_train), desc=f"CLIP iteration") as progress_bar:
+                            for t_it, (i, j) in enumerate(zip(reversed(seq_train), reversed(seq_train_next))):
+                                t = (torch.ones(n) * i).to(self.device)
+                                t_next = (torch.ones(n) * j).to(self.device)
 
-                                    x = denoising_step(x, t=t, t_next=t_next, models=model,
-                                                       logvars=self.logvar,
-                                                       sampling_type=self.args.sample_type,
-                                                       b=self.betas,
-                                                       eta=self.args.eta,
-                                                       learn_sigma=learn_sigma)
+                                x = denoising_step(x, t=t, t_next=t_next, models=model,
+                                                   logvars=self.logvar,
+                                                   sampling_type=self.args.sample_type,
+                                                   b=self.betas,
+                                                   eta=self.args.eta,
+                                                   learn_sigma=learn_sigma)
 
-                                    progress_bar.update(1)
+                                progress_bar.update(1)
 
-                            ##### new loss ##########
-                            if(self.args.version == "counterfactual"):
-                                #loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
-                                #loss_clip = (2 - clip_loss_func(x0, x)) / 2
-                                counterfactual_array[step] = counterfactual_array[step].to('cuda')
-                                loss_clip = (2 - clip_loss_func(counterfactual_array[step], x)) / 2
-                                loss_clip = -torch.log(loss_clip)
-                                if(self.config.data.dataset != "Chexpert"):
-                                    loss_id = torch.mean(id_loss_func(counterfactual_array[step], x))
-                                loss_l1 = nn.L1Loss()(counterfactual_array[step], x)
-                                if(self.config.data.dataset != "Chexpert"):
-                                    loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
-                                else:
-                                    loss = self.args.clip_loss_w * loss_clip + self.args.l1_loss_w * loss_l1
-                                loss.backward()
-                            #######################
-                            
-                            #### old loss ######
-                            if(self.args.version =="standard"):
-                                loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
-                                loss_clip = -torch.log(loss_clip)
-                                loss_id = torch.mean(id_loss_func(x0, x))
-                                loss_l1 = nn.L1Loss()(x0, x)
-                                loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
-                                loss.backward()
-                            ###################
-
-                            optim_ft.step()
+                        ##### new loss ##########
+                        if(self.args.version == "counterfactual"):
+                            #loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
+                            #loss_clip = (2 - clip_loss_func(x0, x)) / 2
+                            counterfactual_array[step] = counterfactual_array[step].to('cuda')
+                            loss_clip = (2 - clip_loss_func(counterfactual_array[step], x)) / 2
+                            loss_clip = -torch.log(loss_clip)
                             if(self.config.data.dataset != "Chexpert"):
-                                print(f"CLIP {step}-{it_out}: loss_id: {loss_id:.3f}, loss_clip: {loss_clip:.3f}")
+                                loss_id = torch.mean(id_loss_func(counterfactual_array[step], x))
+                            loss_l1 = nn.L1Loss()(counterfactual_array[step], x)
+                            if(self.config.data.dataset != "Chexpert"):
+                                loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
                             else:
-                                print(f"CLIP {step}-{it_out}: loss_clip: {loss_clip:.3f}")
+                                loss = self.args.clip_loss_w * loss_clip + self.args.l1_loss_w * loss_l1
+                            loss.backward()
+                        #######################
+                        
+                        #### old loss ######
+                        if(self.args.version =="standard"):
+                            loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
+                            loss_clip = -torch.log(loss_clip)
+                            loss_id = torch.mean(id_loss_func(x0, x))
+                            loss_l1 = nn.L1Loss()(x0, x)
+                            loss = self.args.clip_loss_w * loss_clip + self.args.id_loss_w * loss_id + self.args.l1_loss_w * loss_l1
+                            loss.backward()
+                        ###################
 
-                            if self.args.save_train_image:
-                                tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
-                                                                           f'train_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_train_step}.png'))
-                                if(self.args.version == "counterfactual" and it_out==0):
-                                  tvu.save_image((counterfactual_array[step] + 1) * 0.5, os.path.join(self.args.image_folder,
-                                                                           f'counterfactual_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_train_step}.png'))
-                            time_in_end = time.time()
-                            print(f"Training for 1 image takes {time_in_end - time_in_start:.4f}s")
-                            if step == self.args.n_train_img - 1:
-                                break
-                                
-                        if isinstance(model, nn.DataParallel):
-                            torch.save(model.module.state_dict(), save_name)
+                        optim_ft.step()
+                        if(self.config.data.dataset != "Chexpert"):
+                            print(f"CLIP {step}-{it_out}: loss_id: {loss_id:.3f}, loss_clip: {loss_clip:.3f}")
                         else:
-                            torch.save(model.state_dict(), save_name)
-                        print(f'Model {save_name} is saved.')
-                        scheduler_ft.step()
+                            print(f"CLIP {step}-{it_out}: loss_clip: {loss_clip:.3f}")
 
-                # ----------- Eval -----------#
-                if self.args.do_test:
-                    if not self.args.do_train:
-                        print("loading following pth file:")
-                        print(f"../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weight_{self.args.weight_epoch}.pth")
-                        model.module.load_state_dict(torch.load(f"../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{self.args.weight_epoch}.pth"))
-
-                    model.eval()
-                    img_lat_pairs = img_lat_pairs_dic[mode]
-                    for step, (x0, x_id, x_lat) in enumerate(img_lat_pairs):
-                        with torch.no_grad():
-                            x = x_lat
-                            with tqdm(total=len(seq_test), desc=f"Eval iteration") as progress_bar:
-                                for i, j in zip(reversed(seq_test), reversed(seq_test_next)):
-                                    t = (torch.ones(n) * i).to(self.device)
-                                    t_next = (torch.ones(n) * j).to(self.device)
-
-                                    x = denoising_step(x, t=t, t_next=t_next, models=model,
-                                                       logvars=self.logvar,
-                                                       sampling_type=self.args.sample_type,
-                                                       b=self.betas,
-                                                       eta=self.args.eta,
-                                                       learn_sigma=learn_sigma)
-
-                                    progress_bar.update(1)
-
-                            print(f"Eval {step}-{it_out}")
+                        if self.args.save_train_image:
                             tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
-                                                                       f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
-                            if(self.args.save_test_drive and (not self.args.do_train)):
-                                tvu.save_image((x + 1) * 0.5,f'../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/OurGeneratedImages/class/image{step}.png')
-                            if step == self.args.n_test_img - 1:
-                                break
+                                                                       f'train_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_train_step}.png'))
+                            if(self.args.version == "counterfactual" and it_out==0):
+                              tvu.save_image((counterfactual_array[step] + 1) * 0.5, os.path.join(self.args.image_folder,
+                                                                       f'counterfactual_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_train_step}.png'))
+                        time_in_end = time.time()
+                        print(f"Training for 1 image takes {time_in_end - time_in_start:.4f}s")
+                        if step == self.args.n_train_img - 1:
+                            break
+                            
+                    if isinstance(model, nn.DataParallel):
+                        torch.save(model.module.state_dict(), save_name)
+                    else:
+                        torch.save(model.state_dict(), save_name)
+                    print(f'Model {save_name} is saved.')
+                    scheduler_ft.step()
+
+            # ----------- Eval -----------#
+            if self.args.do_test:
+                if not self.args.do_train:
+                    print("loading following pth file:")
+                    print(f"../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weight_{self.args.weight_epoch}.pth")
+                    model.module.load_state_dict(torch.load(f"../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/checkpoints/{self.args.dataset_path}_weights_{self.args.weight_epoch}.pth"))
+
+                model.eval()
+                img_lat_pairs = img_lat_pairs_dic[mode]
+                for step, (x0, x_id, x_lat) in enumerate(img_lat_pairs):
+                    with torch.no_grad():
+                        x = x_lat
+                        with tqdm(total=len(seq_test), desc=f"Eval iteration") as progress_bar:
+                            for i, j in zip(reversed(seq_test), reversed(seq_test_next)):
+                                t = (torch.ones(n) * i).to(self.device)
+                                t_next = (torch.ones(n) * j).to(self.device)
+
+                                x = denoising_step(x, t=t, t_next=t_next, models=model,
+                                                   logvars=self.logvar,
+                                                   sampling_type=self.args.sample_type,
+                                                   b=self.betas,
+                                                   eta=self.args.eta,
+                                                   learn_sigma=learn_sigma)
+
+                                progress_bar.update(1)
+
+                        print(f"Eval {step}-{it_out}")
+                        tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
+                                                                   f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
+                        if(self.args.save_test_drive and (not self.args.do_train)):
+                            tvu.save_image((x + 1) * 0.5,f'../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/OurGeneratedImages/class/image{step}.png')
+                        if step == self.args.n_test_img - 1:
+                            break
 
     def clip_finetune_eff(self):
         print(self.args.exp)

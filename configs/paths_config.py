@@ -9,9 +9,9 @@ DATASET_PATHS = {
 }
 
 MODEL_PATHS = {
-	'AFHQ': "../../../drive/MyDrive/CLIPDiffusion/afhq_dog_4m.pt",
+	'AFHQ': "../drive/MyDrive/CLIPDiffusion/afhq_dog_4m.pt",
 	'FFHQ': "pretrained/ffhq_10m.pt",
-	'ir_se50': '../../../drive/MyDrive/CLIPDiffusion/model_ir_se50.pth',
+	'ir_se50': '../drive/MyDrive/CLIPDiffusion/model_ir_se50.pth',
     'IMAGENET': "pretrained/512x512_diffusion.pt",
 	'shape_predictor': "pretrained/shape_predictor_68_face_landmarks.dat.bz2",
 }

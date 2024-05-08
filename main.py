@@ -19,6 +19,8 @@ def parse_args_and_config():
     parser.add_argument('--save_test_drive', type=int, default=0, help='# variable to decide if save or not test images on drive')
     parser.add_argument('--weight_epoch', type=str, default="5", help='# epoch of the weight to load')
     parser.add_argument('--model_embedding', type=str, default="CLIP", help='# which model use to compute embedding for the loss')
+    parser.add_argument('--save_path_name', type=str, default="Celeba", help='# folder name where save running')
+
 
     # Mode
     parser.add_argument('--clip_finetune', action='store_true')
@@ -87,7 +89,9 @@ def parse_args_and_config():
     new_config = dict2namespace(config)
 
     if args.clip_finetune or args.clip_finetune_eff :
-        if args.edit_attr is not None:
+        if args.save_path_name is not None:
+            args.exp = args.exp + args.save_path_name
+        elif args.edit_attr is not None:
             args.exp = args.exp + f'_FT_{new_config.data.category}_{args.edit_attr}_t{args.t_0}_ninv{args.n_inv_step}_ngen{args.n_train_step}_id{args.id_loss_w}_l1{args.l1_loss_w}_lr{args.lr_clip_finetune}'
         else:
             args.exp = args.exp + f'_FT_{new_config.data.category}_{args.trg_txts}_t{args.t_0}_ninv{args.n_inv_step}_ngen{args.n_train_step}_id{args.id_loss_w}_l1{args.l1_loss_w}_lr{args.lr_clip_finetune}'

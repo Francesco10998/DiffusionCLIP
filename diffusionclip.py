@@ -447,8 +447,12 @@ class DiffusionCLIP(object):
                                 progress_bar.update(1)
 
                         print(f"Eval {step}-{it_out}")
-                        tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
-                                                                   f'{mode}_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
+                        if(self.args.trg_txts is not None):
+                            tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
+                                                                       f'{mode}_{step}_2_clip_{self.args.trg_txts.replace(" ", "_")}_{it_out}_ngen{self.args.n_test_step}.png'))
+                        else:
+                             tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
+                                                                       f'{mode}_{step}_2_clip_{it_out}_ngen{self.args.n_test_step}.png'))
                         if(self.args.save_test_drive and (not self.args.do_train)):
                             tvu.save_image((x + 1) * 0.5,f'../drive/MyDrive/CLIPDiffusion/{self.args.dataset_path}/OurGeneratedImages/class/image{step}.png')
                         if step == self.args.n_test_img - 1:

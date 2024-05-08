@@ -324,8 +324,8 @@ class DiffusionCLIP(object):
         for src_txt, trg_txt in zip(self.src_txts, self.trg_txts):
             print(f"CHANGE {src_txt} TO {trg_txt}")
         """
-        if (src_txt is not None):
-            print(f"CHANGE {src_txt} TO {trg_txt}")
+        if (self.args.src_txts is not None):
+            print(f"CHANGE {self.args.src_txts} TO {self.args.trg_txt}")
         
         model.module.load_state_dict(init_ckpt)
         optim_ft.load_state_dict(init_opt_ckpt)
@@ -383,7 +383,7 @@ class DiffusionCLIP(object):
                         
                         #### old loss ######
                         if(self.args.version =="standard"):
-                            loss_clip = (2 - clip_loss_func(x0, src_txt, x, trg_txt)) / 2
+                            loss_clip = (2 - clip_loss_func(x0, self.args.src_txts, x, self.args.trg_txts)) / 2
                             loss_clip = -torch.log(loss_clip)
                             loss_id = torch.mean(id_loss_func(x0, x))
                             loss_l1 = nn.L1Loss()(x0, x)
@@ -398,11 +398,16 @@ class DiffusionCLIP(object):
                             print(f"CLIP {step}-{it_out}: loss_clip: {loss_clip:.3f}")
 
                         if self.args.save_train_image:
-                            tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
-                                                                       f'train_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_train_step}.png'))
-                            if(self.args.version == "counterfactual" and it_out==0):
-                              tvu.save_image((counterfactual_array[step] + 1) * 0.5, os.path.join(self.args.image_folder,
-                                                                       f'counterfactual_{step}_2_clip_{trg_txt.replace(" ", "_")}_{it_out}_ngen{self.args.n_train_step}.png'))
+                            if(self.args.trg_txts is not None):
+                              tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
+                                                                        f'train_{step}_2_clip_{self.args.trg_txts.replace(" ", "_")}_{it_out}_ngen{self.args.n_train_step}.png'))
+                            else:
+                              tvu.save_image((x + 1) * 0.5, os.path.join(self.args.image_folder,
+                                                                        f'train_{step}_2_clip_{it_out}_ngen{self.args.n_train_step}.png'))
+                              if(self.args.version == "counterfactual" and it_out==0):
+                                tvu.save_image((counterfactual_array[step] + 1) * 0.5, os.path.join(self.args.image_folder,
+                                                                        f'counterfactual_{step}_2_clip_{it_out}_ngen{self.args.n_train_step}.png'))
+
                         time_in_end = time.time()
                         print(f"Training for 1 image takes {time_in_end - time_in_start:.4f}s")
                         if step == self.args.n_train_img - 1:

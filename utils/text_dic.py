@@ -2,7 +2,9 @@ SRC_TRG_TXT_DIC = {
     # Human face
     'eyeglasses': (['person'],
                ['person with eyeglasses']),
-     'mustache': (['person'],
+    'white': (['person'],
+               ['person with white hair']),
+    'mustache': (['person'],
                ['person with mustache']),
     'blackmustache': (['person'],
                ['person with black mustache']),
